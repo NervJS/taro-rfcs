@@ -65,3 +65,4 @@ RFC 提案文档的作者没有义务去进行 RFC 提案的代码实现。当�
 
 已经被接受的 RFC 提案需要包含一个在 Taro 主仓库的 Pull Request 链接（即便 PR 还在起草或未完成阶段），RFC 提案的作者和 Taro 团队需要去督促 RFC 实现 PR 朝着 RFC 提案文档所描述的方向去推进。
 
+Taro RFC 流程机制受到了来自 [Rust RFC Process](https://github.com/rust-lang/rfcs)、[React RFC Process](https://github.com/reactjs/rfcs) 和 [Vue RFC Process](https://github.com/vuejs/rfcs) 的启发。
