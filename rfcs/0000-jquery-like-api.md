@@ -115,11 +115,11 @@ export default {
 
 实现该方案不需要编译时配合，纯运行时实现即可。核心 API 放在新的包：`@tarojs/extend`，作为 ES6 Module 导出方便 tree-shaking。`@tarojs/extend` 以后可能会承载其它额外功能。
 
-整体来说需要在 `@tarojs/runtime` 实现三个 API：
+整体来说至少需要在 `@tarojs/runtime` 实现三个 API：
 
 * `document.getElementsByClassName`
 * `document.getElementsByTagName`
-* `$.insertToPage(content: collection)`：安全地把一个 jQuery `collection` 实例插入到当前渲染页面，类似于 `React.Portal`
+* `$.insertToPage(content: collection)`：安全地把一个 jQuery `collection` 插入到当前渲染页面的方法，类似于 `React.Portal` 的命令式版本
 
 在 `@tarojs/extend` 实现类似于 [zepto](https://zeptojs.com) 的功能集，但比起 `zepto` 而言会删减部分在 ES6 中已经有替代或在小程序端不可用的实现。
 
@@ -145,5 +145,5 @@ export default {
 
 1. 在文档中把所有 API 功能/参数都详细列出来；
 2. 单独开一章文档讲解如何用 jQuery like API 实现跨框架组件/插件；
-3. 使用 jQuery like API 实现一个真正可用的组件或插件；
+3. 使用 jQuery like API 实现一个真正可用的组件或插件案例供开发者参考；
 4. 在 3.0 版本发布和后续的文章介绍/推广中有意识提及该方案的存在和用法
