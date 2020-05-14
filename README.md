@@ -42,7 +42,7 @@ RFC （Request For Comments）就是一种为了保证重大特性更新和架�
 - 向 Taro RFC 仓库发起 Pull Request。在这个阶段 Taro 团队和社区一同讨论 RFC 提案；
 - RFC 提案在社区中达成共识，RFC 提案进入 `Active` 阶段；
 - RFC 提案的代码实现在 Taro 主仓库被合并，RFC 提案进入 `Landed` 阶段，RFC 提案也会被合并进入 RFC 仓库；
-- 最终 Taro 团队会决定 RFC 提案的变更在哪个版本开始释出。
+- 最终 [Taro 团队](https://nervjs.github.io/taro/docs/team)会决定 RFC 提案的变更在哪个版本开始释出。
 
 ## 在 `Pending` 阶段的 RFC 提案
 
