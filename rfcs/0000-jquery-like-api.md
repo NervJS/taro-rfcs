@@ -115,10 +115,11 @@ export default {
 
 实现该方案不需要编译时配合，纯运行时实现即可。核心 API 放在新的包：`@tarojs/extend`，作为 ES6 Module 导出方便 tree-shaking。`@tarojs/extend` 以后可能会承载其它额外功能。
 
-整体来说需要在 `@tarojs/runtime` 实现两个 API：
+整体来说需要在 `@tarojs/runtime` 实现三个 API：
 
 * `document.getElementsByClassName`
 * `document.getElementsByTagName`
+* `$.insertToPage(content: collection)`：安全地把一个 jQuery `collection` 实例插入到当前渲染页面，类似于 `React.Portal`
 
 在 `@tarojs/extend` 实现类似于 [zepto](https://zeptojs.com) 的功能集，但比起 `zepto` 而言会删减部分在 ES6 中已经有替代或在小程序端不可用的实现。
 
