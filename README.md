@@ -36,7 +36,7 @@ RFC （Request For Comments）就是一种为了保证重大特性更新和架�
 
 简而言之，如果需要 RFC 改动在未来的 Taro 版本在发布，需要先让 RFC 提案文档在 RFC 仓库合并。
 
-- Fork Taro RFC 仓库： http://github.com/nervjs/rfcs；
+- Fork Taro RFC 仓库： http://github.com/nervjs/taro-rfcs；
 - 复制 `0000-template.md` 到 `rfcs/0000-my-feature` （`my-feature` 需要更改为一个能够描述该 RFC 的词语，`0000` 是 RFC 的序号，先不用更改）；
 - 根据模板 active/0000-my-feature 填充 RFC 提案：RFC 需要描述清晰的动机与原因、展示具体的案例和设计的细节、以及可能造成的问题。RFC 提案进入 `Pending` 阶段；
 - 向 Taro RFC 仓库发起 Pull Request。在这个阶段 Taro 团队和社区一同讨论 RFC 提案；
