@@ -69,7 +69,7 @@ process.env.FRAMEWORK = 'vue3'
 就具体实现而言，Taro 主要需要做的工作有 3 项：
 
 1. 在有全局框架环境变量的地方新增 `vue3` 的判断，这部分主要涵盖的包有：`@tarojs/runtime`、`@tarojs/router`、`@tarojs/taro-h5`、`@tarojs/loader`；
-2. 在 `@tarojs/runtime` 添加 `createVue3App` 函数，连接 Vue 3 页面组件和小程序规范的页面配置和路由，生命周期连接可以与当前 React/Vue2 的连接器 `createPageConfig` 公用；
+2. 在 `@tarojs/runtime` 添加 `createVue3App` 函数，连接 Vue 3 入口/页面组件和小程序规范的入口/页面配置，生命周期连接可以与当前 React/Vue2 的连接器 `createPageConfig` 公用；
 3. 新增 Vue 3 模板和对应 Vuex 模板；
 
 其中的核心工作在于实现 `createVue3App` 函数，Vue 2 的 `createVueApp` 函数接受三个函数：
@@ -91,7 +91,7 @@ function createVue3App (App: App<HostElement>, h: h, config: AppConfig)
 1. `createVue3App` 函数会和 `createReactApp`/`createVueApp` 一样放在 `@tarojs/runtime`，以 ES6 Modules 的形式导出供各包调用，实现时需注意避免引入冗余依赖，以免导致 tree-shaking 失效；
 2. `vue-loader` 也需要更新版本，由于 `webpack/mini-runner` 现在已经将 Vue 2 版本的 `vue-loader` 内置，Vue 3 的 `vue-loader` 可以从项目目录中取;
 3. 当前 Taro 包引入的 Vue Typings 为 Vue 2，使用 TypeScript 实现的包需要注意从 `@vue/runtime-dom` 引入类型，如有必要可以在 `tsconfig` 进行 `alias`
-
+
 ## 缺陷
 
 1. Vue 3 内部实现使用了 [Proxy](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Proxy) ，在 iOS 9 及以下操作系统无法运行。但 Vue 官方团队在正式版发布后会推出兼容版本。
