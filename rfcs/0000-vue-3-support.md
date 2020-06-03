@@ -66,9 +66,9 @@ export default App
 process.env.FRAMEWORK = 'vue3'
 ```
 
-就具体实现而言，Taro 主要需要做的工作有 4 项：
+就具体实现而言，Taro 主要需要做的工作有 3 项：
 
-1. 在有全局框架环境变量的地方新增 `vue3` 的判断，这部分主要涵盖的包有：`@tarojs/runtime`、`@tarojs/router`、`@tarojs/taro-h5`、`@tarojs/`；
+1. 在有全局框架环境变量的地方新增 `vue3` 的判断，这部分主要涵盖的包有：`@tarojs/runtime`、`@tarojs/router`、`@tarojs/taro-h5`、`@tarojs/loader`；
 2. 在 `@tarojs/runtime` 添加 `createVue3App` 函数，连接 Vue 3 页面组件和小程序规范的页面配置和路由，生命周期连接可以与当前 React/Vue2 的连接器 `createPageConfig` 公用；
 3. 新增 Vue 3 模板和对应 Vuex 模板；
 
@@ -78,7 +78,7 @@ process.env.FRAMEWORK = 'vue3'
 function createVueApp (App: VueInstance, vue: Vue, config: AppConfig)
 ```
 
-但 Vue 3 所有 API 都使用 ES6 Modules 的形式导出，Taro 需要的 API 应该只有创建虚拟 DOM 的 `h` 函数，因此 `createVue3App` 的函数参数将变为：
+但 Vue 3 所有 API 都使用 ES6 Modules 的形式导出，Taro 需要的 API 只有创建虚拟 DOM 的 `h` 函数，因此 `createVue3App` 的函数参数将变为：
 
 ```js
 function createVue3App (App: App<HostElement>, h: h, config: AppConfig)
