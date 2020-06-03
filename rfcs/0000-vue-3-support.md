@@ -94,7 +94,7 @@ function createVue3App (App: App<HostElement>, h: h, config: AppConfig)
 
 ## 缺陷
 
-1. Vue 3 内部实现使用了 [Proxy](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Proxy) ，在 iOS 9 及以下浏览器无法运行。但 Vue 官方团队在正式版发布后会推出兼容版本。
+1. Vue 3 内部实现使用了 [Proxy](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Proxy) ，在 iOS 9 及以下操作系统无法运行。但 Vue 官方团队在正式版发布后会推出兼容版本。
 2. Vue 3 可以使用 `createRerender` 方法创建一个类似 `react-reconciler` 的渲染器，在小程序端未来可以考虑使用。但目前 Vue 3 的实现没有太多冗余浏览器兼容逻辑，可以先使用 `@vue/runtime-dom` 在小程序进行渲染。
 
 ## 替代选择
