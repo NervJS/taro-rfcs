@@ -54,53 +54,168 @@ export default App
 
 ## 详细设计
 
-影响 Vue 3 在 Taro 中的实现主要有三个 RFC：
-
-1. Vue RFC 0006：[slots-unification](https://github.com/vuejs/rfcs/blob/master/active-rfcs/0006-slots-unification.md)
-2. Vue RFC 0008：[render-function-api-change](https://github.com/vuejs/rfcs/blob/master/active-rfcs/0008-render-function-api-change.md)
-3. Vue RFC 0009：[global-api-change](https://github.com/vuejs/rfcs/blob/master/active-rfcs/0009-global-api-change.md)
-
-这三个 RFC 与现在 Vue 2 的实现存在巨大差距，只能选择重开一个新的全局框架环境变量：
+Vue3 与 Vue 2 的 API 存在巨大差距，只能选择重开一个新的全局框架环境变量：
 
 ```js
 process.env.FRAMEWORK = 'vue3'
 ```
 
-就具体实现而言，Taro 主要需要做的工作有 3 项：
+### 1. 新增 createVue3App 入口连接器
 
-1. 在有全局框架环境变量的地方新增 `vue3` 的判断，这部分主要涵盖的包有：`@tarojs/runtime`、`@tarojs/router`、`@tarojs/taro-h5`、`@tarojs/loader`；
-2. 在 `@tarojs/runtime` 添加 `createVue3App` 函数，连接 Vue 3 入口/页面组件和小程序规范的入口/页面配置，生命周期连接可以与当前 React/Vue2 的连接器 `createPageConfig` 公用；
-3. 新增 Vue 3 模板和对应 Vuex 模板；
+在 `@tarojs/runtime` 添加 `createVue3App` 函数，连接 Vue 3 入口组件和小程序规范的入口配置。
 
-其中的核心工作在于实现 `createVue3App` 函数，Vue 2 的 `createVueApp` 函数接受三个函数：
+Vue3 页面组件与小程序页面配置的连接器可以复用现有的 `createPageConfig`。
 
-```js
-function createVueApp (App: VueInstance, vue: Vue, config: AppConfig)
-```
-
-但 Vue 3 所有 API 都使用 ES6 Modules 的形式导出，Taro 需要的 API 只有创建虚拟 DOM 的 `h` 函数，因此 `createVue3App` 的函数参数将变为：
+Vue 3 所有 API 都使用 ES6 Modules 的形式导出，Taro 需要的 API 只有创建虚拟 DOM 的 `h` 函数。因此 `createVue3App` 的函数参数将变为：
 
 ```js
-function createVue3App (App: App<HostElement>, h: h, config: AppConfig)
+function createVue3App (App: App<TaroElement>, h: h, config: AppConfig)
 ```
 
-相应地，所有将要调用此函数的包都要随之修改，包括：`@tarojs/router`、`@tarojs/taro-loader`。
+createVue3App 内部可以直接使用 Vue2 的 reconciler 配置同步所有 `@tarojs/runtime` 包内的针对 Vue 的特定逻辑。
 
-#### 注意事项
+#### 使用
 
-1. `createVue3App` 函数会和 `createReactApp`/`createVueApp` 一样放在 `@tarojs/runtime`，以 ES6 Modules 的形式导出供各包调用，实现时需注意避免引入冗余依赖，以免导致 tree-shaking 失效；
-2. `vue-loader` 也需要更新版本，由于 `webpack/mini-runner` 现在已经将 Vue 2 版本的 `vue-loader` 内置，Vue 3 的 `vue-loader` 可以从项目目录中取;
-3. 当前 Taro 包引入的 Vue Typings 为 Vue 2，使用 TypeScript 实现的包需要注意从 `@vue/runtime-dom` 引入类型，如有必要可以在 `tsconfig` 进行 `alias`
+开发者在入口文件里只需对外导出 Vue app 实例：
+
+```js
+// app.js
+import { createApp } from 'vue'
+
+const app = createApp({
+  onShow (options) {
+    // ...
+  }
+  // 入口组件不需要实现 render 方法，即使实现了也会被 taro 所覆盖
+})
+
+export app
+```
+
+页面文件正常导出 Vue3 组件即可：
+
+```
+// page.js
+<template>
+  <view class="index">
+    <text>{{ msg }}</text>
+  </view>
+</template>
+
+<script>
+import { ref } from 'vue'
+
+export default {
+  setup () {
+    const msg = ref('Hello world')
+    return {
+      msg
+    }
+  }
+}
+</script>
+```
+
+> 相关 Vue3 RFC：
+
+
+> 1. [0008-render-function-api-change](https://github.com/vuejs/rfcs/blob/master/active-rfcs/0008-render-function-api-change.md)
+> 2. [0009-global-api-change](https://github.com/vuejs/rfcs/blob/master/active-rfcs/0009-global-api-change.md)
+
+### 2. 修改 DOM 方法
+
+* TaroNode 增加 `cloneNode` 方法
+* TaroNode 允许通过 `textContent` 设置文本节点
+* document 增加 `querySelector` 方法
+* document 增加 `createEvent` 方法
+* input 组件的 value 和当前输入值保持一致
+
+### 3. webpack 配置改造
+
+#### 3.1 剥离 vue-loader
+
+之前 `mini-runner` 和 `webpack-runner` 都内置了 vue2 的 `vue-loader`，如果再内置 Vue3 的 `vue-loader` 则显得太过臃肿。因此 `mini-runner` 和 `webpack-runner` 不再内置 `vue-loader`。
+
+现在开发者需要在项目中自行安装所需的 `vue-loader`。针对项目内找不到 `vue-loader` 的情况会进行报错与提醒，各内置模板的 package.json 也需要加上 `vue-loader` 依赖。
+
+#### 3.2 聚合 vue3 独有的 webpack 配置
+
+以往的 webpack 配置逻辑中常常出现以下这样的代码，目的是根据不同框架加入不同的配置：
+
+```
+if (framework === 'vue') {
+  // webpack chain add something...
+}
+```
+
+太多这样的条件判断会使得项目非常难以维护，可以预见到 Vue3 的兼容也需要加入一大堆这样的判断。
+
+因此，我们可以把各框架所需的配置项聚合到各自对应的文件里，通过 **webpackChain** 修改 webpack 配置。
+
+例如:
+
+```js
+switch (framework) {
+  case FRAMEWORK_MAP.VUE:
+    customVueChain(chain)
+    break
+  case FRAMEWORK_MAP.VUE3:
+    customVue3Chain(chain)
+    break
+  default:
+}
+```
+
+这样兼容 Vue3 只需增加一个文件，对外暴露 customVue3Chain 方法。
+
+#### 3.3 解析 .vue 文件
+
+当框架为 Vue3 时，也需要解析 .vue 后缀的文件。
+
+需要修改 `mini-runner` 里的 `miniPlugin` 和 `webpack-runner` 里的 `MainPlugin` 来实现。
+
+### 4. 组件库新增 Vue3 适配层
+
+原本针对 Vue2，组件库提供了一层适配层进行适配。主要工作是对接由 stencil 打包 web-components，包括处理 **Vue 全局配置**、**props**、**attrs**、**ref**、**v-model**、**class** 等。
+
+但是 Vue3 API 改动较大，故而使用 Vue3 语法重新编写提供给 Vue3 的适配层。
+
+> 相关 Vue3 RFC：
+
+
+> 1. [0008-render-function-api-change](https://github.com/vuejs/rfcs/blob/master/active-rfcs/0008-render-function-api-change.md)
+> 2. [0009-global-api-change](https://github.com/vuejs/rfcs/blob/master/active-rfcs/0009-global-api-change.md)
+> 3. [0011-v-model-api-change](https://github.com/vuejs/rfcs/blob/master/active-rfcs/0011-v-model-api-change.md)
+> 4. [0030-emits-option](https://github.com/vuejs/rfcs/blob/master/active-rfcs/0030-emits-option.md)
+> 5. [0031-attr-fallthrough](https://github.com/vuejs/rfcs/blob/master/active-rfcs/0031-attr-fallthrough.md)
+
+
+### 5. taro-loader 改造
+
+调用 createVue3App、对接Vue3 组件库适配层等。
+
+### 6. Taro CLI 改造
+
+* 创建项目时提供 vue3 框架选项，并只显示当前框架可使用的模板
+* 创建项目时，跳过 **.jsx** 文件并保留 **.vue** 文件
+* Joi 对 framework 字段的校验增加 `'vue3'` 选项
+
+### 7. 其它
+
+* 新增 Vue3 的 **default** 与 **vuex** 模板
+* **eslint-config-taro** 增加 vue3 配置
 
 ## 缺陷
 
 1. Vue 3 内部实现使用了 [Proxy](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Proxy) ，在 iOS 9 及以下操作系统无法运行。但 Vue 官方团队在正式版发布后会推出兼容版本。
-2. Vue 3 可以使用 `createRerender` 方法创建一个类似 `react-reconciler` 的渲染器，在小程序端未来可以考虑使用。但目前 Vue 3 的实现没有太多冗余浏览器兼容逻辑，可以先使用 `@vue/runtime-dom` 在小程序进行渲染。
+2. 在 H5 端使用 **ref** 获取基础组件的 DOM 节点，现在只能得到适配层的 Vue 组件实例，而不是对应的 webComponent 根节点。在 Vue2 里可以通过修改父元素的 refs 属性实现，但 Vue3 中组件间初始化顺序有变化，因此暂时不能支持。
+3. 小程序端非类似 HTML 表单标签规范的表单组件，如 Picker，暂不兼容 **v-model**。Vue3 的 v-model 绑定属性改为了 modelValue，事件绑定改为了 update:modelValue。对于 HTML 表单标签会自动对接表单的值与事件，例如 input 会自动对应 modelValue 与 value、update:modelValue 与 @input。但对于 Picker 这种小程序特有表单则无法对应，建议这种情况不使用 v-model。
+4. Vue 3 可以使用 `createRerender` 方法创建一个类似 `react-reconciler` 的渲染器，在小程序端未来可以考虑使用。但目前 Vue 3 的实现没有太多冗余浏览器兼容逻辑，可以先使用 `@vue/runtime-dom` 在小程序进行渲染。
+5. VirtualList 组件需要实现一份 Vue3 版本（待实现）
 
 ## 替代选择
 
 N/A
-
 
 ## 适配策略
 
