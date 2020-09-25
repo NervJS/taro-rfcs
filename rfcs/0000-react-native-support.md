@@ -76,15 +76,57 @@ API、组件支持度与小程序相比有些取舍，参考详细设计 API 及
 
 ### 编译打包方案改造
 
+#### 对于通用配置的支持情况
+
+| 配置            | 是否支持   | 方案                                                         |
+| --------------- | ---------- | ------------------------------------------------------------ |
+| sourceRoot      | 支持       | -                                                            |
+| outputRoot      | 支持       | -                                                            |
+| designWidth     | 支持       | -                                                            |
+| defineConstants | 支持       | 使用 `babel-plugin-transform-inline-environment-variables` 加入到运行环境中。 |
+| alias           | 支持       | 使用 `babel-plugin-module-resolver` 支持。                   |
+| env             | 支持       | 使用 `babel-plugin-transform-inline-environment-variables` 加入到运行环境中。<br/>包含 `process.env.TARO_ENV` 值为 `rn` 。 |
+| copy            | **不支持** | -                                                            |
+| plugins         | **不支持** | -                                                            |
+| presets         | **不支持** | -                                                            |
+| terser          | 支持       | -                                                            |
+| csso            | 支持       | transformer 引入 [csso](https://github.com/css/csso)。       |
+| sass            | 支持       | -                                                            |
+
+#### webpack loader 配置替代方案
+
+通过 webpackChain 修改配置以不再支持，对样式编译配置的修改使用如下代替配置。
+
+```javascript
+rn: {
+    sass: {
+      options: ..., // https://github.com/sass/node-sass#options
+      additionalData: ..., // {String|Function} 注入到所有 sass 文件中
+      sourceMap: boolean, // 不做支持
+    },
+    less: {
+      options: ..., // http://lesscss.org/usage/#less-options
+      additionalData: ..., // {String|Function} 注入到所有 less 文件中
+      sourceMap: boolean, // 不做支持
+    },
+    stylus: {
+      options: ..., // https://stylus-lang.com/docs/js.html
+      additionalData: ..., // {String|Function} 注入到所有 stylus 文件中
+      sourceMap: boolean, // 不做支持
+    },
+    postcss: {
+      options: ..., // https://github.com/postcss/postcss#options
+      additionalData: ..., // {String|Function} 注入到所有 css 文件中
+      sourceMap: boolean, // 不做支持
+    },
+ }
+```
+
 #### 平台差异化文件引用支持
 
 通过配置 babel plugin，支持编译 React Native 平台时，优先使用 `*.rn.*`，编译 Android 平台优先使用 `*.android.*`，编译 iOS 平台优先使用 `*.ios.*`。
 
 参考 [babel-plugin-react-native-platform-specific-extensions](https://github.com/kristerkari/babel-plugin-react-native-platform-specific-extensions) 实现。
-
-#### defineConstants 及 env 支持
-
-将 `defineConstants` 配置的环境变量，使用 `babel-plugin-transform-inline-environment-variables` 加入到运行环境中。
 
 #### 编译平台包替换及 alias 配置
 
@@ -118,6 +160,10 @@ Metro.loadConfig({}, defaultConfig);
 #### sourcemap 支持
 
 基于 metro 本身的 [sourcemap](https://facebook.github.io/metro/docs/cli)，可自行调整配置。
+
+#### TypeScript 支持
+
+[metro-react-native-babel-transformer](https://github.com/facebook/metro/tree/master/packages/metro-react-native-babel-transformer) 使用的 [metro-react-native-babel-preset](https://github.com/facebook/metro/tree/master/packages/metro-react-native-babel-preset) 默认支持 TypeScript。
 
 ### 样式语法支持
 
@@ -156,6 +202,18 @@ Metro.loadConfig({}, defaultConfig);
 #### 单位转化
 
 同 2.x 通过 postcss-pxtransform 插件，在使用 metro 的 postcss transformer 时，引入该插件。该功能支持关闭。
+
+####  样式文件中跨平台支持
+
+如：
+
+```
+/*  #ifdef  %PLATFORM%  */
+样式代码
+/*  #endif  */
+```
+
+仍然通过 `postcss-pxtransform` 支持。
 
 #### 全局的 app.css 支持
 
@@ -259,6 +317,14 @@ export default createPageConfig(Component, config);
 | onResize          | 基于 Dimensions。                     |
 | onTabItemTap      | 基于 React Navigation tabPress 事件。 |
 
+#### 自定义 hooks 支持
+
+useDidShow，useDidHide，usePullDownRefresh等，参考 H5 React 实现。
+
+#### 路由支持从外部直接带参数进入指定页面
+
+基于 React Navigation [Deep linking](https://reactnavigation.org/docs/deep-linking/) 进行实现。
+
 ### API 改造
 
 组件包 taro-rn fork 自 2.x 版本，增加对如下API的支持。
@@ -323,6 +389,10 @@ AppRegistry.registerComponent(appName, () => App);
 #### 状态管理支持
 
 同 Taro 3 [方案](https://taro-docs.jd.com/taro/docs/guide/#%E7%8A%B6%E6%80%81%E7%AE%A1%E7%90%86)，由使用方自行处理。
+
+#### SubPackages 分包
+
+暂不支持分包，分包的配置的 subPackages 会被合并进入 pages。
 
 #### 壳工程
 
