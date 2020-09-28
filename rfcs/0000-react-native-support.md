@@ -95,7 +95,7 @@ API、组件支持度与小程序相比有些取舍，参考详细设计 API 及
 
 #### webpack loader 配置替代方案
 
-通过 webpackChain 修改配置以不再支持，对样式编译配置的修改使用如下代替配置。
+通过 webpackChain 修改配置已不再支持，对样式编译配置的修改使用如下代替配置。
 
 ```javascript
 rn: {
