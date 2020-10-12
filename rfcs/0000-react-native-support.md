@@ -227,6 +227,14 @@ Metro.loadConfig({}, defaultConfig);
 
 > 使用方法及实现方案，与小程序和h5保持一致。
 
+#### React Navigation 升级至 5.x
+
+> 2.x 版本的 React Navigation 已不再维护迭代。我们将路由底层库升级到最新稳定版。
+> 
+> 需要注意的是 5.x 版本，多了几个依赖原生的库，你的路由也将更加顺滑。
+
+参考 [React Navigation 文档](https://reactnavigation.org/docs/getting-started)。
+
 #### 使用 taro-rn-transformer/app.ts 生成入口文件
 
 metro transformer 中判断是否为 index.js，是的话，使用 taro-rn-transformer/app 传入编译配置，进行转换。
