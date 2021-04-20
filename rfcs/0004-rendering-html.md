@@ -55,11 +55,13 @@ function Index () {
 
 ## 详细设计
 
-### 插件化
+### 一、插件化
 
-项目体积对于小程序来说是很重要的，因此我们选择以 `Taro 插件` 的形式引入此功能，开发者可以按需要进行引入。
+项目体积对于小程序来说是很重要的，因此我们选择以 `Taro 插件` 的形式引入此功能。
 
-### HTML 标签的渲染方案
+开发者可以按需要引入插件 `@tarojs/plugin-html` 以开启此功能。
+
+### 二、HTML 标签的渲染方案
 
 开始之前，我们认为有三种可以渲染 HTML 标签的方案：
 
@@ -86,9 +88,9 @@ function Index () {
 
 可见 `<template>` 在性能和兼容性上都优于自定义组件，所以还是沿用目前的 `<template>` 进行渲染。
 
-### HTML 标签与小程序组件的对应
+### 三、HTML 标签与小程序组件的对应
 
-Taro3 的渲染路径如下：
+Taro3 的渲染数据流如下：
 
 **前端框架 -> Taro DOM -> 小程序 data** 
 
@@ -96,16 +98,9 @@ HTML 标签和小程序组件的标签名、属性、事件是有差异的，而
 
 因此 Taro DOM 层不需要改动，只要在 **Taro DOM 序列化为小程序 data** 这一步作影射，也就是在 `hydrate` 步骤修改 Taro DOM 序列化的数据结果即可。
 
-#### 标签名影射
+#### 1. 标签名影射
 
 当 Taro DOM 序列化数据的 `nn` 字段为 HTML 标签时，影射为对应的小程序组件名称。（具体影射规则请看附录一）
-
-##### 表单组件
-
-HTML 标签和小程序组件两种规范中，存在较大差异的部分主要是表单组件。
-
-1. 在使用 `<input type='checkbox'>` 或 `<input type='radio'>` 时，需要手动补充 `<CheckboxGroup>`、`<RadioGroup>` 组件。
-2. HTML 使用 `<select>` + `<option>` 实现选择器，而小程序使用 `<picker>`。两者差异巨大，不作影射。当用户使用了 `<select>` 时，提示用户直接使用 `<Picker>` 组件。
 
 ```js
 // Taro DOM 的序列化数据
@@ -118,7 +113,40 @@ HTML 标签和小程序组件两种规范中，存在较大差异的部分主要
 }
 ```
 
-#### 属性影射
+##### 关于 `<span>`
+
+`<span>` 是行内元素，本来需要影射为同样是行内元素的 `<Text>` 组件。
+
+小程序的 `<Text>` 组件有一个限制，它只能嵌套 `<Text>` 自身，嵌套 `<View>`、`<Image>` 等组件都会不显示。
+
+也就是说，如果 `<span>` 影射为 `<Text>`，`<span>` 只能嵌套同样影射为 `<Text>` 的 `<i>`、`<b>` 等行内元素。
+
+但是我们在适配一些 H5 组件库的时候发现，`<span>` 里很可能会嵌套 `<div>`、`<img>` 等标签，用法十分多样。因此我们决定把 `<span>` 影射为 `<View>`，以兼容 H5 标签写法的多样性。
+
+这样做的缺点是，开发者需要使用样式令 `<span>` 默认表现为行内样式：
+
+```scss
+// app.css
+
+// 方法一：直接引入全套浏览器默认样式
+import '@tarojs/taro/html.css';
+
+// 方法二：只使用部分需要的浏览器默认样式
+.h5-span {
+  display: inline;
+}
+```
+
+至于 `<i>` 等行内标签嵌套 `<div>`、`<img>` 等标签时，不会被兼容，此时嵌套的内容会不显示。解决办法是让 H5 的写法更规范，避免这样使用。
+
+##### 表单组件
+
+HTML 标签和小程序组件两种规范之间，存在较大差异的部分主要是表单组件。
+
+1. 在使用 `<input type='checkbox'>` 或 `<input type='radio'>` 时，需要手动补充 `<CheckboxGroup>`、`<RadioGroup>` 组件。
+2. HTML 使用 `<select>` + `<option>` 实现选择器，而小程序使用 `<picker>`。两者差异巨大，因此不作影射。当用户使用了 `<select>` 时，提示用户直接使用 `<Picker>` 组件。
+
+#### 2. 属性影射
 
 当 Taro DOM 序列化数据的 `nn` 字段为 HTML 标签时，对组件的属性或属性值作对应。（具体影射规则请看附录二）
 
@@ -137,7 +165,7 @@ HTML 标签和小程序组件两种规范中，存在较大差异的部分主要
 }
 ```
 
-#### 事件影射
+#### 3. 事件影射
 
 需要对 HTML 标签和小程序组件间有差异的事件名进行影射：
 
@@ -145,23 +173,23 @@ HTML 标签和小程序组件两种规范中，存在较大差异的部分主要
 | :------- | :----------- |
 |  click   |      tap     |
 
-### 样式
+### 四、样式
 
-#### 浏览器默认样式
+#### 1. 浏览器默认样式
 
 Taro 提供两种内置的浏览器默认样式，可以直接引入生效：
 
-- `@tarojs/taro/html.css`: W3C HTML4 的内置样式，只有 HTML4 标签样式，体积较小，兼容性强，能适应大多数情况。
-- `@tarojs/taro/html5.css`: Chrome(Blink) HTML5 的内置样式，内置样式丰富，包括了大多数 HTML5 标签，体积较大，不一定支持所有小程序容器。
+- `@tarojs/taro/html.css`: W3C HTML4 的内置样式。只有 HTML4 标签样式，体积较小，兼容性强，能适应大多数情况。
+- `@tarojs/taro/html5.css`: Chrome(Blink) HTML5 的内置样式。内置样式丰富，包括了大多数 HTML5 标签，体积较大，不一定支持所有小程序容器。
 
-#### 兼容 CSS 标签选择器
+#### 2. 兼容 CSS 标签选择器
 
 在 `template` 方案中，真正渲染的节点都是小程序组件。使用标签选择器（如：`div {}`）是不能正常工作的。
 
 因此，可以使用类名去进行模拟：
 
-1. 所有 H5 标签都加上类名： `h5-${tagName}`。
-2. 使用 postcss 插件处理标签名选择器：
+1. 为所有 H5 标签都加上类名： `h5-${tagName}`。
+2. 使用 `postcss` 插件处理标签名选择器：
 
 ```css
 // 标签名选择器
@@ -170,57 +198,65 @@ div {}
 .h5-div {}
 ```
 
-#### 通配符 *
+#### 3. 通配符 *
 
 在小程序中使用 `*` 通配符会报错。
 
 而把 `*` 替换为所有 HTML 类名选择器虽然可以实现“通配”的目的，但会引起选择器权重问题。
 
-因此，目前 postcss 插件会删除包含 `*` 选择器的样式块。
+因此，目前 `postcss` 插件会删除包含 `*` 选择器的样式块。
 
-#### H5 组件库的尺寸变小一倍
+#### 4. H5 组件库的尺寸变小一倍
 
-Taro 默认会启动 postcss 插件 `pxtransform`，按比例**把 px 解析为 rpx**。
+Taro 默认会利用 `postcss` 的插件**把 px 按比例解析为 rpx**。
 
-但 H5 组件库不需要被此插件解析，用户可以配置 `pxtransform` 插件进行过滤：
+但 H5 组件库不需要被此插件解析，用户可以配置 `@tarojs/plugin-html` 插件的 `pxtransformBlackList` 选项进行过滤：
 
 ```js
 // config/index.js
 config = {
-  mini: {
-    postcss: {
-      pxtransform: {
-        enable: true,
-        config: {
-          selectorBlackList: [/weui/]
-        }
-      }
-    }
-  }
+  plugins: [
+    ['@tarojs/plugin-html', {
+      pxtransformBlackList: [/demo-/, /van-/]
+    }]
+  ]
 }
 ```
 
-#### rem -> rpx
+#### 5. rem -> rpx
 
 待支持
 
-### 限制
+### 五、限制
 
 H5 标准和小程序标准存在着很大的差异，有一些 Taro 能够抹平，但仍有部分差异无法处理：
 
-#### 1. `<img>` 图片自适应宽度
+#### 1. 获取元素尺寸
 
-在 H5 中，不规定 `<img>` 的宽高时，浏览器会使用原图的宽高作标签的宽高。
+在 H5 中我们可以调用 DOM API **同步**获取元素的尺寸：
 
-而在小程序中，有默认的内置样式设置 `<image>` 标签的尺寸。
+```js
+// h5
+const el = document.getElementById('#inner')
+const res = el.getBoundingClientRect()
+console.log(res)
+```
 
-解决办法：用户在使用 `<img>` 时必须显式设置它的宽高。
+但是在小程序中，获取元素尺寸的 API 是**异步**的：
 
-#### 2. 部分 H5 的样式或 CSS 选择器，小程序不支持
+```js
+// 小程序
+const query = Taro.createSelectorQuery()
+query.select('#inner')
+  .boundingClientRect()
+  .exec(res => {
+    console.log(res)
+  })
+```
 
-不处理
+因此不能兼容那些使用了同步 DOM API 去获取元素尺寸的组件。
 
-#### 3. DOM API 差异
+#### 2. DOM API 差异
 
 `canvas`、`video`、`audio` 等组件在 H5 端可以直接调用 `HTMLElement` 上的方法。
 
@@ -238,10 +274,36 @@ const ctx = Taro.createVideoContext('myVideo')
 ctx.play()
 ```
 
+#### 3. `<img>` 图片自适应宽度
+
+在 H5 中，不设置 `<img>` 的宽高时，浏览器会使用原图的宽高作为标签的宽高。
+
+而在小程序中，不设置 `<img>` 的宽高时，`<image>` 标签使用默认样式中规定的宽高。
+
+解决办法：用户在使用 `<img>` 时必须显式设置它的宽高。
+
+#### 4. ReactDOM
+
+Taro 使用 **React Reconciler** 实现了自定义的渲染器，相对于 ReactDOM 来说功能十分精简。
+
+因此部分基于 ReactDOM 实现的 H5 组件会无法使用，如使用了：`unstable_renderSubtreeIntoContainer`。
+
+#### 5. 部分样式或 CSS 选择器，在小程序中不支持
+
+不处理。
+
+如：
+
+- 通配符 `*`
+- 媒体查询
+- 属性选择器，当属性不是对应小程序组件的内置属性时
+
+#### 6. 不支持使用 SVG
+
+不处理。
+
 ## 缺陷
 
-- 小程序中获取 DOM 尺寸的 API 是异步的，因此无法使用需要获取 DOM 尺寸（如：`el.offsetWidth`）的库。
-- Taro 使用 React Reconciler 实现了自定义的渲染器，因此部分基于 ReactDOM 实现的 H5 组件会无法使用，如：`unstable_renderSubtreeIntoContainer`。
 - Taro Runtime Reconciler 的 hooks 目前是一对一，应该改造成一对多，否则会有冲突问题。
 - 因为是直接修改 Taro DOM 树的序列化数据，可能会令不同小程序、不同框架的数据处理逻辑耦合。
 
@@ -252,8 +314,8 @@ N/A
 ## 适配策略
 
 1. 完善文档；
-2. 新增使用 H5 标签开发的项目模板和配合使用 Antd、ElementUI 组件库的模板；
-3. 新增 Taro 配合使用各种 Web 生态库的示例项目，如 WeUI、Antd、ElementUI；
+2. 新增使用 H5 标签开发的项目模板和配合使用 Antd、VantUI 组件库的模板；
+3. 新增 Taro 配合使用各种 Web 生态库的示例项目，如 WeUI、Antd、VantUI；
 4. 把此功能需要配置的选项归一到插件选项中，让开发者只关注 `@tarojs/plugin-html` 插件，如 postcss 配置。
 
 ## Todos
@@ -269,6 +331,7 @@ N/A
 | :------- | :-------- |
 |  块级标签  |   view   |
 |  内联标签  |   text   |
+|   span   |    view  |
 |   img    |   image  |
 |     a    | navigator |
 |a[\"href=javascript;\"]| view |
@@ -290,48 +353,69 @@ N/A
 
 #### `<a>`
 
-| `<a>` 属性 | `<navigator>` 属性 |
+| `<a>` 属性 | `<Navigator>` 属性 |
 | :----------- | :----------- |
 |     href     |      url     |
 |    target    |   openType   |
 
 `target` 属性值：
 
-| `a[target]` | `navigator[open-type]` |
+| `a[target]` | `Navigator[open-type]` |
 | :----------- | :----------- |
 |    _blank    |   navigate   |
 |    _self     |   redirect   |
 
 #### `<input>`
 
-| `<input>` 属性 | `<input>` 属性 |
+| `<input>` 属性 | `<Input>` 属性 |
 | :----------- | :----------- |
 |  autofocus   |    focus     |
 |   readonly   |   disabled   |
 
 `type` 属性值：
 
-| `input[type]` | `input[type]` |
+| `input[type]` | `Input[type]` |
 | :----------- | :----------- |
 |    tel    |   number   |
 | `input[type=password]` | `input[password=true]` |
 
 #### `<textarea>`
 
-| `<textarea>` 属性 | `<textarea>` 属性 |
+| `<textarea>` 属性 | `<Textarea>` 属性 |
 | :----------- | :----------- |
 |  autofocus   |    focus     |
 |   readonly   |   disabled   |
 
 #### `<progress>`
 
-| `<progress>` 属性 | `<progress>` 属性 |
+| `<progress>` 属性 | `<Progress>` 属性 |
 | :----------- | :----------- |
 |   value / max * 100   |   precent   |
 
 #### `<button>`
 
-| `button[type]` | `button[form-type]` |
+| `button[type]` | `Button[form-type]` |
 | :----------- | :----------- |
-| `button[type=submit]` | `button[form-type=submit]` |
-| `button[type=reset]`  | `button[form-type=reset]` |
+| `button[type=submit]` | `Button[form-type=submit]` |
+| `button[type=reset]`  | `Button[form-type=reset]` |
+
+### 三、事件影射
+
+#### `<input type='checkbox'>`
+
+| `input[type=checkbox]` | `<Checkbox>` |
+| :----------- | :----------- |
+|   onChange   |    bindtap   |
+
+#### `<input type='radio'>`
+
+| `input[type=radio]` | `<Radio>` |
+| :----------- | :----------- |
+|   onChange   |    bindtap   |
+
+#### `<input>`
+
+| `<input>` | `<Input>` |
+| :----------- | :----------- |
+|   onChange   |    onInput   |
+|   keypress   |   onConfirm  |
