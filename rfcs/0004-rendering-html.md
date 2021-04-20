@@ -53,6 +53,12 @@ function Index () {
 }
 ```
 
+### 示例项目
+
+- [taro-weui](https://github.com/NervJS/taro-weui)
+- [taro-antd-mobile](https://github.com/NervJS/taro-antd-mobile)
+- [taro-vant](https://github.com/NervJS/taro-vant)
+
 ## 详细设计
 
 ### 一、插件化
@@ -282,13 +288,26 @@ ctx.play()
 
 解决办法：用户在使用 `<img>` 时必须显式设置它的宽高。
 
-#### 4. ReactDOM
+#### 4. 不能在页面组件的 DOM 树之外插入节点
+
+不支持在开发者编写的页面组件之外插入节点。
+
+例如不支持直接在 `document.body` 下插入节点：
+
+```js
+const el = document.createElement('div')
+document.body.appendChild(el)
+```
+
+因此，React 的 `Portal`，Vue3 的 `Teleport` 都是不支持的。
+
+#### 5. ReactDOM
 
 Taro 使用 **React Reconciler** 实现了自定义的渲染器，相对于 ReactDOM 来说功能十分精简。
 
 因此部分基于 ReactDOM 实现的 H5 组件会无法使用，如使用了：`unstable_renderSubtreeIntoContainer`。
 
-#### 5. 部分样式或 CSS 选择器，在小程序中不支持
+#### 6. 部分样式或 CSS 选择器，在小程序中不支持
 
 不处理。
 
@@ -298,7 +317,7 @@ Taro 使用 **React Reconciler** 实现了自定义的渲染器，相对于 Reac
 - 媒体查询
 - 属性选择器，当属性不是对应小程序组件的内置属性时
 
-#### 6. 不支持使用 SVG
+#### 7. 不支持使用 SVG
 
 不处理。
 
