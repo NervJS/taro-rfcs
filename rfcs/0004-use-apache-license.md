@@ -16,7 +16,7 @@ license 更换为 Apache license 2.0；package.json 标明 Apache-2.0。
 2. 每个文件添加 license 头部声明
 使用脚本进行声明添加 https://github.com/apache/echarts/blob/master/build/addHeader.js <br>
 ```
-# Licensed to the Apache Software Foundation (ASF) under one
+# Licensed to the O2Team under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
 # regarding copyright ownership.  The ASF licenses this file
@@ -96,7 +96,7 @@ https://opensource.guide/zh-hans/legal/#%E6%88%91%E7%9A%84%E9%A1%B9%E7%9B%AE%E9%
 
 如果依赖中有一个的许可协议是”强硬的copyleft”，那么项目将必须使用与之相同的许可协议。copyleft许可协议包括GPLv2，GPLv3和AGPLv3。
 
-5. 提供新增文件检测校验流程，新文件须添加 license 头部。
+5. 提供新增文件检测校验流程，新文件须添加 license 头部
 ## 协议内容
 Apache License 2.0(http://www.apache.org/licenses/LICENSE-2.0) ，中文译文如下：
 <blockquote>
