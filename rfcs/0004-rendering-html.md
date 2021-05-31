@@ -260,7 +260,16 @@ query.select('#inner')
   })
 ```
 
-因此不能兼容那些使用了同步 DOM API 去获取元素尺寸的组件。
+因此不能兼容那些使用了**同步** DOM API 去获取元素尺寸的组件。
+
+Taro 提供了 H5 同步获取尺寸 API 的异步版本，如 `getBoundingClientRect` 可以这样使用：
+
+```js
+// Taro
+const el = document.getElementById('#inner')
+const res = await el.getBoundingClientRect()
+console.log(res)
+```
 
 #### 2. DOM API 差异
 
@@ -334,16 +343,15 @@ N/A
 ## 适配策略
 
 1. 完善文档；
-2. 新增使用 H5 标签开发的项目模板和配合使用 Antd、VantUI 组件库的模板；
-3. 新增 Taro 配合使用各种 Web 生态库的示例项目，如 WeUI、Antd、VantUI；
-4. 把此功能需要配置的选项归一到插件选项中，让开发者只关注 `@tarojs/plugin-html` 插件，如 postcss 配置。
+2. 增加 `getBoundingClientRect` 等获取元素尺寸的**异步** API；
+3. 新增使用 H5 标签开发的项目模板和配合使用 Antd、VantUI 组件库的模板；
+4. 新增 Taro 配合使用各种 Web 生态库的示例项目，如 WeUI、Antd、VantUI；
+5. 把此功能需要配置的选项归一到插件选项中，让开发者只关注 `@tarojs/plugin-html` 插件，如 postcss 配置。
 
 ## Todos
 
-- H5 端样式兼容
 - rem -> rpx
 - 支持 SVG 转为 image data
-- Taro runtime 增加 `getBoundingClientRect`、`offsetTop` 等异步 API
 
 ## 附录
 
