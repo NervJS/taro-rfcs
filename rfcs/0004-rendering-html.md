@@ -332,7 +332,6 @@ Taro 使用 **React Reconciler** 实现了自定义的渲染器，相对于 Reac
 
 ## 缺陷
 
-- Taro Runtime Reconciler 的 hooks 目前是一对一，应该改造成一对多，否则会有冲突问题。
 - 因为是直接修改 Taro DOM 树的序列化数据，可能会令不同小程序、不同框架的数据处理逻辑耦合。
 - React Native 暂不支持。
 
