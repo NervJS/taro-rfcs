@@ -14,7 +14,9 @@
 license 更换为 Apache license 2.0；package.json 标明 Apache-2.0。
 
 2. 每个文件添加 license 头部声明
-使用脚本进行声明添加 https://github.com/apache/echarts/blob/master/build/addHeader.js <br>
+参考使用脚本进行声明添加 https://github.com/apache/echarts/blob/master/build/addHeader.js
+
+使用工具去做：https://github.com/shinken008/apache-license-preamble
 ```
 # Licensed to the O2Team under one
 # or more contributor license agreements.  See the NOTICE file
