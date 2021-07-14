@@ -53,10 +53,6 @@ config = {
 
 ### 4. 编译项目
 
-```js
-$ taro build --type weapp --watch --devtools
-```
-
 ## 详细设计
 
 ### 一、React DevTools 实现
@@ -90,6 +86,8 @@ connectToDevTools({
 #### 2. 魔改 WebSocket
 
 因为小程序的 WebSocket API 不遵循 Web 规范，因此需要使用小程序的 API 实现一个遵循 Web 规范的 WebSocket 对象。
+
+> 支付宝小程序的 WebSocket 规范和其它小程序不一样，需要另外改造
 
 ```js
 // 假设已实现了一个遵循 Web 规范的 WebSocket 对象
