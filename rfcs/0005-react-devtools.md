@@ -19,7 +19,20 @@
 $ yarn add --dev react-devtools @tarojs/plugin-react-devtools
 ```
 
-### 2. 启动开发者工具
+### 2. 配置 Taro 插件
+
+在 Taro 编译配置中配置使用 `@tarojs/plugin-react-devtools`：
+
+```js
+config = {
+  plugins: [
+    '@tarojs/plugin-react-devtools'
+  ],
+  // ...
+}
+```
+
+### 3. 启动开发者工具
 
 配置 npm script，如：
 
@@ -36,19 +49,6 @@ $ yarn add --dev react-devtools @tarojs/plugin-react-devtools
 
 ```sh
 $ npm run devtools
-```
-
-### 3. 配置 Taro 插件
-
-在 Taro 编译配置中配置使用 `@tarojs/plugin-react-devtools`：
-
-```js
-config = {
-  plugins: [
-    '@tarojs/plugin-react-devtools'
-  ],
-  // ...
-}
 ```
 
 ### 4. 编译项目
