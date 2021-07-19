@@ -13,10 +13,10 @@
 
 ### 1. 安装
 
-在项目中安装 react-devtools（开发者自由选择版本）、Taro 插件：
+在项目中安装 Taro 插件：
 
 ```sh
-$ yarn add --dev react-devtools @tarojs/plugin-react-devtools
+$ yarn add --dev @tarojs/plugin-react-devtools
 ```
 
 ### 2. 配置 Taro 插件
@@ -32,26 +32,11 @@ config = {
 }
 ```
 
-### 3. 启动开发者工具
-
-配置 npm script，如：
-
-```json
-{
-  "scripts": {
-    "devtools": "react-devtools"
-  },
-  ...
-}
-```
-
-然后启动 `react-devtools`：
+### 3. 编译项目
 
 ```sh
-$ npm run devtools
+$ taro build --type weapp --watch
 ```
-
-### 4. 编译项目
 
 ## 详细设计
 
@@ -136,6 +121,7 @@ TaroReconciler.injectIntoDevTools({
 
 ## 缺陷
 
+- 强制锁定了 `react-devtools` 的版本，更新版本需要修改 taro 插件代码。
 - [为了识别 custom hooks](https://github.com/facebook/react/blob/main/packages/react-devtools/OVERVIEW.md#inspecting-hooks)，backend 会对部分符合条件的函数式组件执行 `shallow rendering`，需要注意是否存在副作用。
 
 另外，对 devtools 功能的支持不够全面，有些功能需要针对小程序环境魔改 backend 才能实现，欢迎共建～
@@ -149,4 +135,5 @@ N/A
 
 ## 适配策略
 
-- React 模板增加 `react-devtools` 依赖
+- React 模板增加 `@tarojs/plugin-react-devtools` 依赖。
+- 后续可以增加一个参数，用于配置使用开发者项目本地安装的 `react-devtools`。
