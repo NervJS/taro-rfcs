@@ -172,7 +172,7 @@ export const window = new Window()
 ```
 
 #### 3.2、 对象上新增 `addEventListener` `removeEventListener` 方法
-`window.addEventListener` 用于监听 `hashchange` 事件，并触发回调使用。                 
+`window.addEventListener` 用于监听 `hashchange`/`popstate` 事件，并触发回调使用。                 
 ```js
 class Window extends Events {
     addEventListener(event, cb){
@@ -202,7 +202,7 @@ const config = {
     }
     onUnload(){
         // 销毁当前页面的上下文信息
-        window.trigger(CONTEXT_ACTIONS.DESTORY, $taroPath)
+        window.trigger(CONTEXT_ACTIONS.DESTORY, this.$taroPath)
     }
     onShow(){
         // 恢复上下文信息
