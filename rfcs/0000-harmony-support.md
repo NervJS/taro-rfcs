@@ -34,7 +34,7 @@ export default App
 
 ### 1. 在鸿蒙环境下模拟一套浏览器的 BOM 和 DOM
 需要支持使用 React 的语法来开发鸿蒙应用，首先我们需要模拟一套浏览器的 BOM 和 DOM，比如一些 windows、history、document 等全局对象，来给到 React 框架层去使用，使的这些依赖浏览器环境的 Taro 代码可以跑在鸿蒙 app 上。
-![DOM](https://img13.360buyimg.com/imagetools/jfs/t1/230031/37/4320/279939/6560682eF9b22521a/5efd882e262dd66d.png)
+![DOM](https://img13.360buyimg.com/img/jfs/t1/230031/37/4320/279939/6560682eF9b22521a/5efd882e262dd66d.png)
 
 ### 2. 通过 React-Reconciler 接入这些 BOM、DOM
 之后我们和小程序类似的，在 React-Reconciler 里，通过定义一个自定义的 hostconfig，[将 React 一些关键的增删改查宿主环境节点的操作与我们构建的虚拟 BOM、DOM 相绑定。](https://github.com/NervJS/taro/blob/next/packages/taro-react/src/reconciler.ts)绑定成功后，React 项目代码的结果就会直接反应到我们创建的 Taro 虚拟 BOM、DOM 中了。
@@ -44,7 +44,7 @@ export default App
 
 之后我们会将这颗 DOM 树传递给页面入口，绑定在其成员属性 node 上，触发渲染，然后 ArkTS 就会根据这颗 node 树进行一次递归的渲染调用，生成对应的原生组件，从而渲染出具体的页面。
 
-![原理图](https://img14.360buyimg.com/imagetools/jfs/t1/236593/13/4023/141407/6560835eFead86b40/c19b31544ab9d37c.png)
+![原理图](https://img14.360buyimg.com/img/jfs/t1/236593/13/4023/141407/6560835eFead86b40/c19b31544ab9d37c.png)
 
 在用户在触发一些交互行为的时候，会导致上层的 React 框架调用一些修改 DOM 树节点和 DOM node 属性的逻辑，那么这些 DOM 由于是 Taro 自身模拟的，[在创建时都会绑定上 Observed 装饰器，这个装饰器会配合 @objectLink 装饰器来使用](https://developer.harmonyos.com/cn/docs/documentation/doc-guides-V3/arkts-observed-and-objectlink-0000001473697338-V3)，去监听 Taro DOM Node 上属性的变化，并触发所在组件更新方法的调用，从而达到更新的目的。
 
